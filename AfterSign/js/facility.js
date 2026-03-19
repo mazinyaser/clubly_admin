@@ -15,8 +15,8 @@ async function loadFacilities() {
 
   try {
     const [facRes, catRes] = await Promise.all([
-      fetch("https://clublywebsite.runasp.net/api/Facilities"),
-      fetch("https://clublywebsite.runasp.net/api/FacilityCategories")
+      fetch("http://clublywebsite.runasp.net/api/Facilities"),
+      fetch("http://clublywebsite.runasp.net/api/FacilityCategories")
     ]);
     if (!facRes.ok) console.warn("Facilities API:", facRes.status);
     if (!catRes.ok)  console.warn("FacilityCategories API:", catRes.status);
@@ -128,7 +128,7 @@ function facilityCardHtml(fac, catName) {
   const fImgUrl = fac.ImageUrl    || fac.imageUrl    || null;
 
   const imgHTML = fImgUrl
-    ? `<img src="https://clublywebsite.runasp.net${fImgUrl}" alt="${fName}"
+    ? `<img src="http://clublywebsite.runasp.net${fImgUrl}" alt="${fName}"
             onerror="this.parentElement.innerHTML='<div class=placeholder-img><i class=bi bi-image style=font-size:2rem;opacity:.4></i></div>'">`
     : `<div class="placeholder-img"><i class="bi bi-image" style="font-size:2rem;opacity:.4;"></i></div>`;
 
@@ -301,7 +301,7 @@ async function openSchedulePicker(facilityId, facilityName) {
   modal.show();
 
   try {
-    const res  = await fetch('https://clublywebsite.runasp.net/api/FacilitySchedules');
+    const res  = await fetch('http://clublywebsite.runasp.net/api/FacilitySchedules');
     const all  = res.ok ? await res.json() : [];
 
     const scheds = all.filter(s => {
@@ -422,8 +422,8 @@ function schedPickerConfirm() {
   const fac  = (allFacilities || []).find(f => (f.Id || f.id) == _schedPickerChoice.facilityId);
   const name = fac ? (fac.Name || fac.name || 'Facility') : 'Facility';
 
-openBookingModal('facility', _schedPickerChoice.facilityId, name, _schedPickerChoice.slotPrice || 0);
-  setTimeout(() => {
+openBookingModal('facility', _schedPickerChoice.facilityId, name, _schedPickerChoice.slotPrice || 0, [], [], _schedPickerChoice.scheduleId);
+ setTimeout(() => {
     const dateEl     = document.getElementById('bpDate');
     const timeEl     = document.getElementById('bpTime');
     const facilityEl = document.getElementById('bpFacility') || document.getElementById('bpName');

@@ -14,8 +14,8 @@ async function loadActivities() {
 
   try {
     const [actRes, trRes] = await Promise.all([
-      fetch("https://clublywebsite.runasp.net/api/Activities"),
-      fetch("https://clublywebsite.runasp.net/api/Trainers")
+      fetch("http://clublywebsite.runasp.net/api/Activities"),
+      fetch("http://clublywebsite.runasp.net/api/Trainers")
     ]);
 
     const data     = actRes.ok ? await actRes.json() : [];
@@ -76,7 +76,7 @@ function renderActivities(list) {
     const imgUrl  = a.ImageUrl    || a.imageUrl    || null;
 
     const imgStyle = imgUrl
-      ? `background-image:url('https://clublywebsite.runasp.net${imgUrl}');`
+      ? `background-image:url('http://clublywebsite.runasp.net${imgUrl}');`
       : `background:linear-gradient(135deg,#0d1b2a,#1e3a5f);`;
 
     const priceBadge = price != null
@@ -173,6 +173,7 @@ function clearActivityFilters() {
 }
 
 function handleBookActivity(id) {
+  window._currentActivityId = id;
   const act  = (window._allActivities || []).find(a => (a.Id || a.id) == id);
   const name = act ? (act.Name || act.name || 'Activity') : 'Activity';
   openActivityGroupPicker(id, name);
@@ -198,7 +199,7 @@ async function openActivityGroupPicker(activityId, activityName) {
   new bootstrap.Modal(document.getElementById('actPickerModal')).show();
 
   try {
-const res  = await fetch('https://clublywebsite.runasp.net/api/ActivityGroups');
+const res  = await fetch('http://clublywebsite.runasp.net/api/ActivityGroups');
     const all  = res.ok ? await res.json() : [];
 
   const groups = all.filter(g => {
@@ -289,8 +290,10 @@ function selectActivitySlot(btnId, groupId, groupName, date, startTime, endTime,
     btn.style.color       = '#e85d2f';
     btn.style.boxShadow   = '0 0 0 3px rgba(232,93,47,.15)';
   }
-window._actPickerChoice = { groupId, groupName, date, startTime, endTime, price, trainer, durationDays };
-  document.getElementById('actPickerSelected').innerHTML =
+window._actPickerChoice = { 
+  groupId, groupName, date, startTime, endTime, price, trainer, durationDays,
+  activityId: window._currentActivityId || 0
+};  document.getElementById('actPickerSelected').innerHTML =
     `<i class="bi bi-check-circle-fill" style="color:#2ec4b6"></i> <strong>${groupName}</strong> &nbsp; ${date} &nbsp; ${startTime} → ${endTime}`;
 
   const confirmBtn = document.getElementById('actPickerConfirm');
@@ -303,6 +306,8 @@ function actPickerConfirm() {
   bootstrap.Modal.getInstance(document.getElementById('actPickerModal')).hide();
 
   const c = window._actPickerChoice;
+    window._actPickerActivityId = c.activityId || window._currentActivityId || 0;
+
   openBookingModal('activity', c.groupId, window._actPickerActivityName, c.price);
 
  setTimeout(() => {
