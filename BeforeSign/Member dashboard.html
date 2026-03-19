@@ -1869,13 +1869,106 @@ setTimeout(() => {
 }, 300);
 
 // ===== PROFILE =====
-document.getElementById('profileForm').addEventListener('submit', e => {
+// ===== PROFILE =====
+const API_BASE_URL = 'https://clublywebsite.runasp.net/api';
+const memberId = localStorage.getItem('userId');
+
+async function loadProfileData() {
+  if (!memberId) return;
+  try {
+    const res = await fetch(`${API_BASE_URL}/Members/${memberId}`);
+    if (!res.ok) throw new Error();
+    const m = await res.json();
+
+    // Avatar card
+    const fullName = m.fullName || '';
+    const parts = fullName.split(' ');
+    const ini = parts.slice(0,2).map(w => w[0]?.toUpperCase() || '').join('');
+    document.getElementById('profileNameDisplay').textContent = fullName;
+    document.getElementById('profileEmailDisplay').textContent = m.email || '';
+    document.getElementById('profileInitials').textContent = ini;
+
+    if (m.joinDate) {
+      const jd = new Date(m.joinDate);
+      document.getElementById('memberSinceDisplay').textContent =
+        jd.toLocaleString('en-US', { month: 'short', year: 'numeric' });
+    }
+
+    if (m.imageUrl) {
+      const img = document.getElementById('profileImg');
+      img.src = m.imageUrl.startsWith('http') ? m.imageUrl : 'https://clublywebsite.runasp.net' + m.imageUrl;
+      img.style.display = 'block';
+      document.getElementById('profileInitials').style.display = 'none';
+    }
+
+    // Form fields
+    document.getElementById('firstName').value  = parts[0] || '';
+    document.getElementById('lastName').value   = parts.slice(1).join(' ') || '';
+    document.getElementById('emailAddress').value = m.email || '';
+    document.getElementById('phoneNumber').value  = m.phone || '';
+    if (m.birthDate) {
+      const bd = m.birthDate.split('T')[0];
+      document.getElementById('dateOfBirth').value = bd;
+    }
+    if (m.address) document.getElementById('address').value = m.address;
+
+    // Header
+    document.querySelector('.header-user span').textContent = fullName;
+    document.querySelector('.user-avatar').textContent = ini;
+
+  } catch(e) {
+    console.warn('Could not load profile:', e);
+  }
+}
+
+document.getElementById('profileForm').addEventListener('submit', async e => {
   e.preventDefault();
-  const fn = document.getElementById('firstName').value;
-  const ln = document.getElementById('lastName').value;
-  document.getElementById('profileNameDisplay').textContent = fn + ' ' + ln;
-  document.getElementById('profileInitials').textContent = (fn[0] + ln[0]).toUpperCase();
-  alert('Profile updated successfully!');
+  const btn = e.target.querySelector('button[type="submit"]');
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const fn    = document.getElementById('firstName').value.trim();
+  const ln    = document.getElementById('lastName').value.trim();
+  const phone = document.getElementById('phoneNumber').value.trim();
+  const dob   = document.getElementById('dateOfBirth').value;
+  const addr  = document.getElementById('address').value.trim();
+
+  const fd = new FormData();
+  fd.append('FirstName', fn);
+  fd.append('LastName',  ln);
+  fd.append('Phone',     phone);
+  if (dob)  fd.append('BirthDate', dob);
+  if (addr) fd.append('Address',   addr);
+
+  const fileInput = document.getElementById('fileInput');
+  if (fileInput.files && fileInput.files[0]) fd.append('Image', fileInput.files[0]);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/Members/${memberId}`, { method: 'PUT', body: fd });
+    if (!res.ok) throw new Error(await res.text());
+
+    const fullName = fn + ' ' + ln;
+    const ini = [fn[0], ln[0]].filter(Boolean).map(c => c.toUpperCase()).join('');
+    document.getElementById('profileNameDisplay').textContent = fullName;
+    document.getElementById('profileInitials').textContent   = ini;
+    document.querySelector('.header-user span').textContent  = fullName;
+    document.querySelector('.user-avatar').textContent       = ini;
+    localStorage.setItem('fullName', fullName);
+
+    Swal.fire({
+      icon: 'success',
+      title: 'Profile Updated',
+      text: 'Your information has been saved successfully.',
+      showConfirmButton: false,
+      timer: 1800,
+      timerProgressBar: true
+    });
+  } catch (err) {
+    Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to update profile.' });
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Changes';
+  }
 });
 
 document.getElementById('fileInput').addEventListener('change', function() {
@@ -2088,6 +2181,7 @@ renderUpcoming();
 renderSchedule();
 renderMembership();
 renderNotifications(state.notifications);
+loadProfileData();
 
 </script>
 <div id="signOutToast" style="position:fixed;bottom:22px;right:22px;background:#1a2332;color:#fff;padding:10px 16px;border-radius:11px;font-size:13px;font-weight:600;opacity:0;transform:translateY(8px);transition:all .28s;z-index:99999;pointer-events:none;box-shadow:0 20px 60px rgba(0,0,0,0.1);max-width:280px;font-family:'Cairo',sans-serif;"></div>
