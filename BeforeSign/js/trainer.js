@@ -1,6 +1,6 @@
 // ── Trainer Page JS ─────────────────────────────────────────────────────────
-const TRAINER_API  = 'http://clublywebsite.runasp.net/api/Trainers';
-const ACTIVITY_API = 'http://clublywebsite.runasp.net/api/Activities';
+const TRAINER_API  = 'https://clublywebsite.runasp.net/api/Trainers';
+const ACTIVITY_API = 'https://clublywebsite.runasp.net/api/Activities';
 
 document.addEventListener('DOMContentLoaded', () => {
   loadTrainers();

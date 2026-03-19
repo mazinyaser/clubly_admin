@@ -641,7 +641,7 @@ fd2.append('transactionId',      v('bpTx' + suf));
 fd2.append('price',              parseFloat(v('bpAmt' + suf)) || _formData.price);
 if (window._bpReceiptFile) fd2.append('receiptImage', window._bpReceiptFile);
 
-const facRes = await fetch('http://clublywebsite.runasp.net/api/FacilityBookings', {
+const facRes = await fetch('https://clublywebsite.runasp.net/api/FacilityBookings', {
   method: 'POST',
   body: fd2
 });
