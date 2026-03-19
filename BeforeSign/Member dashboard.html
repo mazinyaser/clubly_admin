@@ -2137,6 +2137,7 @@ function saiRenderResults(data) {
 }
 
 // ===== SIGN OUT =====
+
 function showSignOutToast(msg, type = 'success') {
   const n = document.getElementById('signOutToast');
   n.textContent = (type === 'success' ? '✓  ' : '✕  ') + msg;
@@ -2176,6 +2177,7 @@ function handleSignOut() {
 }
 
 // ===== INIT =====
+
 generateCalendar();
 renderUpcoming();
 renderSchedule();
